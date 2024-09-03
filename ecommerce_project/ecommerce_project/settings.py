@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'main',
     
     # 3rd party apps
-    'rest_framework'
+    'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
     'drf_yasg',

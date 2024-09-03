@@ -24,12 +24,12 @@ from django.conf.urls.static import static
 
 schema_view = get_schema_view(
    openapi.Info(
-      title="Ecommerce API",
-      default_version='v1',
-      description="E-Commerce Rest API",
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="yengsabs@gmail.com"),
-      license=openapi.License(name="BSD License"),
+    title="E-commerce API",
+    default_version='v1',
+    description="API documentation for the E-commerce project",
+    terms_of_service="https://www.google.com/policies/terms/",
+    contact=openapi.Contact(email="yengsabs@gmail.com"),
+    license=openapi.License(name="BSD License"),
    ),
    public=True,
    permission_classes=(permissions.AllowAny,),

@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from accounts.serializers import UserRegisterSerializer, UserLoginSerializer
-from django.contrib.auth.models import User
+from accounts.models import User
 
 class UserRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
