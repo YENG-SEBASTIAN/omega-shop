@@ -18,8 +18,8 @@ class CartSerializer(serializers.ModelSerializer):
         """
         Check that the quantity is available in stock.
         """
-        product = data.get('product')
-        if product.stock < data.get('quantity'):
+        product = data['product']
+        if product.stock < data['quantity']:
             raise serializers.ValidationError("Not enough stock available.")
         return data
 
@@ -37,11 +37,13 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), source='product')
     price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = '__all__'
+        fields = ['id', 'order', 'product', 'product_id', 'quantity', 'price', 'created_at', 'updated_at']
 
     def create(self, validated_data):
         order_item = OrderItem(**validated_data)
@@ -57,29 +59,30 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True)
+    items = OrderItemSerializer(many=True, read_only=True)
+    items_data = OrderItemSerializer(many=True, write_only=True)
     total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = Order
-        fields = '__all__'
+        fields = ['id', 'user', 'order_date', 'total_price', 'status', 'items', 'items_data', 'created_at', 'updated_at']
 
     def create(self, validated_data):
-        items_data = validated_data.pop('items')
+        items_data = validated_data.pop('items_data')
         order = Order.objects.create(**validated_data)
         total_price = 0
 
         for item_data in items_data:
             item_data['order'] = order
             order_item = OrderItem.objects.create(**item_data)
-            total_price += order_item.price
+            total_price += order_item.price * order_item.quantity
 
         order.total_price = total_price
         order.save()
         return order
 
     def update(self, instance, validated_data):
-        items_data = validated_data.pop('items', None)
+        items_data = validated_data.pop('items_data', None)
         instance.status = validated_data.get('status', instance.status)
         instance.save()
 
@@ -90,7 +93,7 @@ class OrderSerializer(serializers.ModelSerializer):
             for item_data in items_data:
                 item_data['order'] = instance
                 order_item = OrderItem.objects.create(**item_data)
-                total_price += order_item.price
+                total_price += order_item.price * order_item.quantity
 
             instance.total_price = total_price
             instance.save()
